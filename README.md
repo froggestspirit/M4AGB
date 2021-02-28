@@ -2,6 +2,8 @@
 
 This is a stripped down version of pokeemerald to only play music
 
+Currently, only "make MODERN=1" works
+
 To set up the repository, see [INSTALL.md](INSTALL.md).
 
 
