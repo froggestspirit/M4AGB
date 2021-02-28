@@ -1758,3 +1758,17 @@ void SetPokemonCryPriority(u8 val)
 {
     gPokemonCrySong.priority = val;
 }
+
+void ChnVolSetAsm(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+
+{
+    u32 uVar1;
+
+    uVar1 = (track->chan->velocity * (track->chan->rhythmPan + 0x80) * track->volMR) >> 0xe;
+    if (uVar1 > 0xff) uVar1 = 0xff;
+    track->chan->rightVolume = uVar1;
+    uVar1 = (track->chan->velocity * (0x7f - track->chan->rhythmPan) * track->volML) >> 0xe;
+    if (uVar1 > 0xff) uVar1 = 0xff;
+    track->chan->leftVolume = uVar1;
+    return;
+}

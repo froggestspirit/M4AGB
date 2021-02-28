@@ -1503,36 +1503,6 @@ TrackStop_Done:
 	.pool
 	thumb_func_end TrackStop
 
-	thumb_func_start ChnVolSetAsm
-ChnVolSetAsm:
-	ldrb r1, [r4, o_SoundChannel_velocity]
-	movs r0, o_SoundChannel_rhythmPan
-	ldrsb r2, [r4, r0]
-	movs r3, 0x80
-	adds r3, r2
-	muls r3, r1
-	ldrb r0, [r5, o_MusicPlayerTrack_volMR]
-	muls r0, r3
-	asrs r0, 14
-	cmp r0, 0xFF
-	bls _081DDAE8
-	movs r0, 0xFF
-_081DDAE8:
-	strb r0, [r4, o_SoundChannel_rightVolume]
-	movs r3, 0x7F
-	subs r3, r2
-	muls r3, r1
-	ldrb r0, [r5, o_MusicPlayerTrack_volML]
-	muls r0, r3
-	asrs r0, 14
-	cmp r0, 0xFF
-	bls _081DDAFC
-	movs r0, 0xFF
-_081DDAFC:
-	strb r0, [r4, o_SoundChannel_leftVolume]
-	bx lr
-	thumb_func_end ChnVolSetAsm
-
 	thumb_func_start ply_note
 ply_note:
 	push {r4-r7,lr}
