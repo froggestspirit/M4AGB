@@ -1,10 +1,10 @@
 typedef unsigned char   undefined;
 
-typedef unsigned char    byte;
-typedef unsigned s32    dword;
+typedef unsigned char    u8;
+typedef unsigned s32    s32;
 typedef long double    longdouble;
 typedef long long    longlong;
-typedef unsigned char    uchar;
+typedef unsigned char    u8;
 typedef unsigned s32    u32;
 typedef unsigned long    ulong;
 typedef unsigned long long    ulonglong;
@@ -48,7 +48,7 @@ void SoundMainRAM(s32 param_1)
 
 {
   u32 uVar1;
-  byte bVar2;
+  u8 bVar2;
   char cVar3;
   s32 iVar4;
   u32 uVar5;
@@ -85,7 +85,7 @@ void SoundMainRAM(s32 param_1)
   undefined4 in_stack_00000024;
   code *UNRECOVERED_JUMPTABLE;
   
-  bVar2 = *(byte *)(param_1 + 5);
+  bVar2 = *(u8 *)(param_1 + 5);
   if (bVar2 == 0) {
     puVar15 = (undefined4 *)(unaff_r6 + (s32)unaff_r5);
     if ((unaff_r8 >> 2 & 1) != 0) {
@@ -144,7 +144,7 @@ void SoundMainRAM(s32 param_1)
     } while (uVar7 != 0 && bVar22);
   }
   iVar4 = in_stack_00000018[6];
-  uVar5 = (u32)*(byte *)((s32)in_stack_00000018 + 6);
+  uVar5 = (u32)*(u8 *)((s32)in_stack_00000018 + 6);
   puVar15 = in_stack_00000018 + 0x14;
 SoundMainRAM_ChanLoop:
   iVar10 = puVar15[9];
@@ -163,16 +163,16 @@ _081DD24A:
       return;
     }
   }
-  bVar2 = *(byte *)puVar15;
+  bVar2 = *(u8 *)puVar15;
   uStack00000010 = (u32)bVar2;
   if ((bVar2 & 199) != 0) {
     if ((bVar2 & 0x80) == 0) {
-      uVar5 = (u32)*(byte *)((s32)puVar15 + 9);
+      uVar5 = (u32)*(u8 *)((s32)puVar15 + 9);
       if ((bVar2 & 4) == 0) {
         if ((bVar2 & 0x40) == 0) {
           if ((uStack00000010 & 3) == 2) {
-            uVar5 = *(byte *)((s32)puVar15 + 5) * uVar5 >> 8;
-            uVar7 = (u32)*(byte *)((s32)puVar15 + 6);
+            uVar5 = *(u8 *)((s32)puVar15 + 5) * uVar5 >> 8;
+            uVar7 = (u32)*(u8 *)((s32)puVar15 + 6);
             if (uVar5 <= uVar7) {
               if (uVar7 == 0) goto _081DCFC8;
               uStack00000010 = uStack00000010 - 1;
@@ -185,18 +185,18 @@ _081DD24A:
           }
         }
         else {
-          uVar5 = *(byte *)((s32)puVar15 + 7) * uVar5 >> 8;
-          if (uVar5 <= *(byte *)(puVar15 + 3)) {
+          uVar5 = *(u8 *)((s32)puVar15 + 7) * uVar5 >> 8;
+          if (uVar5 <= *(u8 *)(puVar15 + 3)) {
 _081DCFC8:
-            if (*(byte *)(puVar15 + 3) == 0) goto _081DCFB0;
+            if (*(u8 *)(puVar15 + 3) == 0) goto _081DCFB0;
             uStack00000010 = uStack00000010 | 4;
             *(char *)puVar15 = (char)uStack00000010;
-            uVar5 = (u32)*(byte *)(puVar15 + 3);
+            uVar5 = (u32)*(u8 *)(puVar15 + 3);
           }
         }
       }
       else {
-        bVar2 = *(byte *)((s32)puVar15 + 0xd);
+        bVar2 = *(u8 *)((s32)puVar15 + 0xd);
         iVar6 = bVar2 - 1;
         *(char *)((s32)puVar15 + 0xd) = (char)iVar6;
         if (bVar2 == 0 || iVar6 == 0) goto _081DCFB0;
@@ -215,12 +215,12 @@ _081DCFB0:
       uVar5 = 0;
       *(undefined *)((s32)puVar15 + 9) = 0;
       puVar15[7] = 0;
-      if ((*(byte *)(iVar10 + 3) & 0xc0) != 0) {
+      if ((*(u8 *)(iVar10 + 3) & 0xc0) != 0) {
         uStack00000010 = 0x13;
         *(undefined *)puVar15 = 0x13;
       }
 _081DCFF8:
-      uVar5 = uVar5 + *(byte *)(puVar15 + 1);
+      uVar5 = uVar5 + *(u8 *)(puVar15 + 1);
       if (0xfe < uVar5) {
         uStack00000010 = uStack00000010 - 1;
         *(char *)puVar15 = (char)uStack00000010;
@@ -228,9 +228,9 @@ _081DCFF8:
       }
     }
     *(char *)((s32)puVar15 + 9) = (char)uVar5;
-    uVar5 = uVar5 * (*(byte *)((s32)in_stack_00000018 + 7) + 1) >> 4;
-    *(char *)((s32)puVar15 + 10) = (char)(uVar5 * *(byte *)((s32)puVar15 + 2) >> 8);
-    *(char *)((s32)puVar15 + 0xb) = (char)(uVar5 * *(byte *)((s32)puVar15 + 3) >> 8);
+    uVar5 = uVar5 * (*(u8 *)((s32)in_stack_00000018 + 7) + 1) >> 4;
+    *(char *)((s32)puVar15 + 10) = (char)(uVar5 * *(u8 *)((s32)puVar15 + 2) >> 8);
+    *(char *)((s32)puVar15 + 0xb) = (char)(uVar5 * *(u8 *)((s32)puVar15 + 3) >> 8);
     uStack00000010 = uStack00000010 & 0x10;
     if (uStack00000010 != 0) {
       in_stack_0000000c = (char *)(iVar10 + 0x10 + *(s32 *)(iVar10 + 8));
@@ -239,13 +239,13 @@ _081DCFF8:
     uVar5 = puVar15[6];
     pcVar11 = (char *)puVar15[10];
     uVar7 = puVar15[7];
-    if ((*(byte *)((s32)puVar15 + 1) & 0x30) == 0) {
-      iVar10 = (u32)*(byte *)((s32)puVar15 + 10) * 0x10000;
-      iVar6 = (u32)*(byte *)((s32)puVar15 + 0xb) * 0x10000;
+    if ((*(u8 *)((s32)puVar15 + 1) & 0x30) == 0) {
+      iVar10 = (u32)*(u8 *)((s32)puVar15 + 10) * 0x10000;
+      iVar6 = (u32)*(u8 *)((s32)puVar15 + 0xb) * 0x10000;
       uVar19 = uVar5;
       puVar13 = in_stack_00000008;
       uVar20 = unaff_r8;
-      if ((*(byte *)((s32)puVar15 + 1) & 8) == 0) {
+      if ((*(u8 *)((s32)puVar15 + 1) & 8) == 0) {
         iVar8 = puVar15[8];
         uVar19 = SEXT14(*pcVar11);
         pcVar11 = pcVar11 + 1;
@@ -420,7 +420,7 @@ void sub_82DF49C(undefined4 param_1,undefined4 param_2,s32 param_3,s32 param_4)
   undefined4 extraout_r1_01;
   s32 extraout_r1_02;
   char *pcVar7;
-  byte *unaff_r4;
+  u8 *unaff_r4;
   u32 *unaff_r5;
   u32 *puVar8;
   short *psVar9;
@@ -605,10 +605,10 @@ undefined8 sub_82DF758(undefined4 param_1,undefined4 param_2,undefined4 param_3,
 
 {
   u32 uVar1;
-  byte bVar2;
+  u8 bVar2;
   char cVar3;
   s32 iVar4;
-  byte *pbVar5;
+  u8 *pbVar5;
   s32 unaff_r4;
   char *pcVar6;
   char *pcVar7;
@@ -620,8 +620,8 @@ undefined8 sub_82DF758(undefined4 param_1,undefined4 param_2,undefined4 param_3,
     iVar4 = uVar1 * 0x21 + *(s32 *)(unaff_r4 + 0x24);
     cVar8 = *(char *)(iVar4 + 0x10);
     pcVar6 = &DAT_03000001;
-    bVar2 = *(byte *)(iVar4 + 0x11);
-    pbVar5 = (byte *)(iVar4 + 0x12);
+    bVar2 = *(u8 *)(iVar4 + 0x11);
+    pbVar5 = (u8 *)(iVar4 + 0x12);
     iVar4 = 0x40;
     gUnknown_03001300 = cVar8;
     while( true ) {
@@ -694,16 +694,16 @@ void RealClearChain(s32 param_1)
 undefined4 ply_fine(undefined4 param_1,undefined *param_2)
 
 {
-  byte *pbVar1;
+  u8 *pbVar1;
   undefined4 in_lr;
   
-  pbVar1 = *(byte **)(param_2 + 0x20);
-  while (pbVar1 != (byte *)0x0) {
+  pbVar1 = *(u8 **)(param_2 + 0x20);
+  while (pbVar1 != (u8 *)0x0) {
     if ((*pbVar1 & 199) != 0) {
       *pbVar1 = *pbVar1 | 0x40;
     }
     RealClearChain(pbVar1);
-    pbVar1 = *(byte **)(pbVar1 + 0x34);
+    pbVar1 = *(u8 **)(pbVar1 + 0x34);
   }
   *param_2 = 0;
   return in_lr;
@@ -779,7 +779,7 @@ undefined4 ply_goto(undefined4 param_1,s32 param_2)
   undefined8 uVar3;
   
   puVar1 = (uint3 *)(*(s32 *)(param_2 + 0x40) + 1);
-  uVar2 = (u32)*(byte *)puVar1;
+  uVar2 = (u32)*(u8 *)puVar1;
   uVar3 = ldrb_r3_r2((u32)*puVar1 << 8);
   *(u32 *)((s32)((ulonglong)uVar3 >> 0x20) + 0x40) = (u32)uVar3 | uVar2;
   return in_lr;
@@ -791,25 +791,25 @@ undefined4 ply_patt(undefined4 param_1,undefined *param_2)
 
 {
   u32 uVar1;
-  byte *pbVar2;
+  u8 *pbVar2;
   undefined4 in_lr;
   undefined8 uVar3;
   
-  if (2 < (byte)param_2[2]) {
-    pbVar2 = *(byte **)(param_2 + 0x20);
-    while (pbVar2 != (byte *)0x0) {
+  if (2 < (u8)param_2[2]) {
+    pbVar2 = *(u8 **)(param_2 + 0x20);
+    while (pbVar2 != (u8 *)0x0) {
       if ((*pbVar2 & 199) != 0) {
         *pbVar2 = *pbVar2 | 0x40;
       }
       RealClearChain(pbVar2);
-      pbVar2 = *(byte **)(pbVar2 + 0x34);
+      pbVar2 = *(u8 **)(pbVar2 + 0x34);
     }
     *param_2 = 0;
     return in_lr;
   }
-  *(s32 *)(param_2 + (u32)(byte)param_2[2] * 4 + 0x44) = *(s32 *)(param_2 + 0x40) + 4;
+  *(s32 *)(param_2 + (u32)(u8)param_2[2] * 4 + 0x44) = *(s32 *)(param_2 + 0x40) + 4;
   param_2[2] = param_2[2] + '\x01';
-  uVar1 = (u32)*(byte *)(uint3 *)(*(s32 *)(param_2 + 0x40) + 1);
+  uVar1 = (u32)*(u8 *)(uint3 *)(*(s32 *)(param_2 + 0x40) + 1);
   uVar3 = ldrb_r3_r2((u32)*(uint3 *)(*(s32 *)(param_2 + 0x40) + 1) << 8);
   *(u32 *)((s32)((ulonglong)uVar3 >> 0x20) + 0x40) = (u32)uVar3 | uVar1;
   return in_lr;
@@ -822,8 +822,8 @@ void ply_pend(undefined4 param_1,s32 param_2)
 {
   s32 iVar1;
   
-  if (*(byte *)(param_2 + 2) != 0) {
-    iVar1 = *(byte *)(param_2 + 2) - 1;
+  if (*(u8 *)(param_2 + 2) != 0) {
+    iVar1 = *(u8 *)(param_2 + 2) - 1;
     *(char *)(param_2 + 2) = (char)iVar1;
     *(undefined4 *)(param_2 + 0x40) = *(undefined4 *)(param_2 + iVar1 * 4 + 0x44);
   }
@@ -848,7 +848,7 @@ undefined4 ply_rept(undefined4 param_1,s32 param_2)
     *(char **)(param_2 + 0x40) = pcVar2 + 1;
   }
   else {
-    uVar4 = *(byte *)(param_2 + 3) + 1;
+    uVar4 = *(u8 *)(param_2 + 3) + 1;
     *(char *)(param_2 + 3) = (char)uVar4;
     uVar3 = uVar4;
     ld_r3_tp_adr_i();
@@ -860,7 +860,7 @@ undefined4 ply_rept(undefined4 param_1,s32 param_2)
     }
   }
   puVar1 = (uint3 *)(*(s32 *)(param_2 + 0x40) + 1);
-  uVar3 = (u32)*(byte *)puVar1;
+  uVar3 = (u32)*(u8 *)puVar1;
   uVar5 = ldrb_r3_r2((u32)*puVar1 << 8);
   *(u32 *)((s32)((ulonglong)uVar5 >> 0x20) + 0x40) = (u32)uVar5 | uVar3;
   return in_lr;
@@ -898,8 +898,8 @@ void ply_tempo(void)
 void ply_keysh(void)
 
 {
-  byte *extraout_r1;
-  byte in_r3;
+  u8 *extraout_r1;
+  u8 in_r3;
   
   ld_r3_tp_adr_i();
   extraout_r1[10] = in_r3;
@@ -912,15 +912,15 @@ void ply_keysh(void)
 void ply_voice(s32 param_1,s32 param_2)
 
 {
-  byte bVar1;
+  u8 bVar1;
   s32 extraout_r1;
   s32 extraout_r1_00;
   s32 extraout_r1_01;
   undefined4 *puVar2;
   undefined4 uVar3;
   
-  bVar1 = **(byte **)(param_2 + 0x40);
-  *(byte **)(param_2 + 0x40) = *(byte **)(param_2 + 0x40) + 1;
+  bVar1 = **(u8 **)(param_2 + 0x40);
+  *(u8 **)(param_2 + 0x40) = *(u8 **)(param_2 + 0x40) + 1;
   puVar2 = (undefined4 *)((u32)bVar1 * 0xc + *(s32 *)(param_1 + 0x30));
   uVar3 = *puVar2;
   chk_adr_r2();
@@ -939,8 +939,8 @@ void ply_voice(s32 param_1,s32 param_2)
 void ply_vol(void)
 
 {
-  byte *extraout_r1;
-  byte in_r3;
+  u8 *extraout_r1;
+  u8 in_r3;
   
   ld_r3_tp_adr_i();
   extraout_r1[0x12] = in_r3;
@@ -953,7 +953,7 @@ void ply_vol(void)
 void ply_pan(void)
 
 {
-  byte *extraout_r1;
+  u8 *extraout_r1;
   char in_r3;
   
   ld_r3_tp_adr_i();
@@ -967,7 +967,7 @@ void ply_pan(void)
 void ply_bend(void)
 
 {
-  byte *extraout_r1;
+  u8 *extraout_r1;
   char in_r3;
   
   ld_r3_tp_adr_i();
@@ -981,8 +981,8 @@ void ply_bend(void)
 void ply_bendr(void)
 
 {
-  byte *extraout_r1;
-  byte in_r3;
+  u8 *extraout_r1;
+  u8 in_r3;
   
   ld_r3_tp_adr_i();
   extraout_r1[0xf] = in_r3;
@@ -1008,12 +1008,12 @@ void ply_lfodl(void)
 void ply_modt(void)
 
 {
-  byte *extraout_r1;
+  u8 *extraout_r1;
   u32 in_r3;
   
   ld_r3_tp_adr_i();
   if (extraout_r1[0x18] != in_r3) {
-    extraout_r1[0x18] = (byte)in_r3;
+    extraout_r1[0x18] = (u8)in_r3;
     *extraout_r1 = *extraout_r1 | 0xf;
   }
   return;
@@ -1024,7 +1024,7 @@ void ply_modt(void)
 void ply_tune(void)
 
 {
-  byte *extraout_r1;
+  u8 *extraout_r1;
   char in_r3;
   
   ld_r3_tp_adr_i();
@@ -1041,8 +1041,8 @@ void ply_port(undefined4 param_1,s32 param_2)
   undefined *puVar1;
   u32 uVar2;
   
-  uVar2 = (u32)**(byte **)(param_2 + 0x40);
-  puVar1 = (undefined *)_081DD64A(&REG_SOUND1CNT + uVar2,param_2,*(byte **)(param_2 + 0x40) + 1);
+  uVar2 = (u32)**(u8 **)(param_2 + 0x40);
+  puVar1 = (undefined *)_081DD64A(&REG_SOUND1CNT + uVar2,param_2,*(u8 **)(param_2 + 0x40) + 1);
   *puVar1 = (char)uVar2;
   return;
 }
@@ -1054,13 +1054,13 @@ void ply_port(undefined4 param_1,s32 param_2)
 void m4aSoundVSync(void)
 
 {
-  byte bVar1;
+  u8 bVar1;
   s32 *piVar2;
   s32 iVar3;
   
   piVar2 = SOUND_INFO_PTR;
   if ((*SOUND_INFO_PTR + 0x978c92adU < 2) &&
-     (bVar1 = *(byte *)(SOUND_INFO_PTR + 1), iVar3 = bVar1 - 1,
+     (bVar1 = *(u8 *)(SOUND_INFO_PTR + 1), iVar3 = bVar1 - 1,
      *(char *)(SOUND_INFO_PTR + 1) = (char)iVar3, iVar3 == 0 || bVar1 == 0)) {
     *(undefined *)(piVar2 + 1) = *(undefined *)((s32)piVar2 + 0xb);
     if ((_REG_DMA1CNT & 0x2000000) != 0) {
@@ -1084,8 +1084,8 @@ undefined8 MPlayMain(MusicPlayerInfo *param_1,undefined4 param_2)
   u32 uVar2;
   s32 iVar3;
   u32 uVar4;
-  byte bVar5;
-  byte *pbVar6;
+  u8 bVar5;
+  u8 *pbVar6;
   u32 uVar7;
   u32 uVar8;
   u32 uVar9;
@@ -1156,7 +1156,7 @@ _081DD9BC:
                       iVar3 = 0x80 - iVar3;
                     }
                     uVar7 = (s32)(iVar3 * (u32)pMVar11->mod) >> 6;
-                    if ((((byte)pMVar11->modM ^ uVar7) & 0xff) != 0) {
+                    if ((((u8)pMVar11->modM ^ uVar7) & 0xff) != 0) {
                       pMVar11->modM = (s8)uVar7;
                       if (pMVar11->modT == '\0') {
                         bVar5 = 0xc;
@@ -1217,7 +1217,7 @@ _081DD998:
         else {
           bVar5 = pSVar10->type;
           if (((pMVar11->flags & 3) != 0) && (ChnVolSetAsm(), (bVar5 & 7) != 0)) {
-            *(byte *)((s32)&pSVar10->fw + 1) = *(byte *)((s32)&pSVar10->fw + 1) | 1;
+            *(u8 *)((s32)&pSVar10->fw + 1) = *(u8 *)((s32)&pSVar10->fw + 1) | 1;
           }
           if ((pMVar11->flags & 0xc) != 0) {
             iVar3 = (u32)pSVar10->key + (s32)(char)pMVar11->keyM;
@@ -1231,7 +1231,7 @@ _081DD998:
             else {
               uVar4 = call_r3(bVar5 & 7,iVar3,pMVar11->pitM,*(undefined4 *)(iVar1 + 0x30));
               pSVar10->frequency = uVar4;
-              *(byte *)((s32)&pSVar10->fw + 1) = *(byte *)((s32)&pSVar10->fw + 1) | 2;
+              *(u8 *)((s32)&pSVar10->fw + 1) = *(u8 *)((s32)&pSVar10->fw + 1) | 2;
             }
           }
         }
@@ -1264,7 +1264,7 @@ void call_r3(void)
 
 
 
-undefined4 TrackStop(undefined4 param_1,byte *param_2)
+undefined4 TrackStop(undefined4 param_1,u8 *param_2)
 
 {
   char *pcVar1;
@@ -1288,25 +1288,25 @@ undefined4 TrackStop(undefined4 param_1,byte *param_2)
 }
 
 
-undefined8 ply_note(s32 param_1,s32 param_2,byte *param_3)
+undefined8 ply_note(s32 param_1,s32 param_2,u8 *param_3)
 
 {
-  byte bVar1;
-  byte bVar2;
+  u8 bVar1;
+  u8 bVar2;
   bool bVar3;
   s32 iVar4;
-  byte *pbVar5;
+  u8 *pbVar5;
   u32 uVar6;
-  byte bVar7;
-  byte bVar8;
-  byte *pbVar9;
-  byte *pbVar10;
+  u8 bVar7;
+  u8 bVar8;
+  u8 *pbVar9;
+  u8 *pbVar10;
   u32 uVar11;
   u32 uVar12;
   u32 uVar13;
   s32 iVar14;
-  byte *pbVar15;
-  byte *pbVar16;
+  u8 *pbVar15;
+  u8 *pbVar16;
   u32 uVar17;
   WaveData *wav;
   undefined4 unaff_r9;
@@ -1315,7 +1315,7 @@ undefined8 ply_note(s32 param_1,s32 param_2,byte *param_3)
   
   iVar4 = SOUND_INFO_PTR;
   param_3[4] = ""[param_1];
-  pbVar9 = *(byte **)(param_3 + 0x40);
+  pbVar9 = *(u8 **)(param_3 + 0x40);
   if (*pbVar9 < 0x80) {
     param_3[5] = *pbVar9;
     pbVar10 = pbVar9 + 1;
@@ -1327,7 +1327,7 @@ undefined8 ply_note(s32 param_1,s32 param_2,byte *param_3)
         pbVar10 = pbVar9 + 3;
       }
     }
-    *(byte **)(param_3 + 0x40) = pbVar10;
+    *(u8 **)(param_3 + 0x40) = pbVar10;
   }
   bVar7 = 0;
   pbVar9 = param_3 + 0x24;
@@ -1339,9 +1339,9 @@ undefined8 ply_note(s32 param_1,s32 param_2,byte *param_3)
     bVar8 = param_3[5];
     uVar11 = (u32)bVar8;
     if ((bVar1 & 0x40) != 0) {
-      uVar11 = (u32)*(byte *)(*(s32 *)(param_3 + 0x2c) + uVar11);
+      uVar11 = (u32)*(u8 *)(*(s32 *)(param_3 + 0x2c) + uVar11);
     }
-    pbVar9 = (byte *)(uVar11 * 0xc + *(s32 *)(param_3 + 0x28));
+    pbVar9 = (u8 *)(uVar11 * 0xc + *(s32 *)(param_3 + 0x28));
     if ((*pbVar9 & 0xc0) != 0) goto _081DDCEA;
     if ((bVar1 & 0x80) != 0) {
       if ((pbVar9[3] & 0x80) != 0) {
@@ -1350,18 +1350,18 @@ undefined8 ply_note(s32 param_1,s32 param_2,byte *param_3)
       bVar8 = pbVar9[1];
     }
   }
-  uVar11 = (u32)param_3[0x1d] + (u32)*(byte *)(param_2 + 9);
+  uVar11 = (u32)param_3[0x1d] + (u32)*(u8 *)(param_2 + 9);
   if (0xff < uVar11) {
     uVar11 = 0xff;
   }
   bVar1 = *pbVar9;
   if ((bVar1 & 7) == 0) {
     bVar3 = false;
-    pbVar16 = (byte *)(iVar4 + 0x50);
-    uVar12 = (u32)*(byte *)(iVar4 + 6);
+    pbVar16 = (u8 *)(iVar4 + 0x50);
+    uVar12 = (u32)*(u8 *)(iVar4 + 6);
     uVar17 = uVar11;
     pbVar10 = param_3;
-    pbVar5 = (byte *)0x0;
+    pbVar5 = (u8 *)0x0;
     do {
       pbVar15 = pbVar16;
       if ((*pbVar16 & 199) == 0) goto _081DDC40;
@@ -1375,11 +1375,11 @@ _081DDC18:
         uVar13 = (u32)pbVar16[0x13];
         if (uVar13 < uVar17) {
           uVar17 = uVar13;
-          pbVar5 = *(byte **)(pbVar16 + 0x2c);
+          pbVar5 = *(u8 **)(pbVar16 + 0x2c);
           goto _081DDC32;
         }
         if (uVar13 <= uVar17) {
-          pbVar5 = *(byte **)(pbVar16 + 0x2c);
+          pbVar5 = *(u8 **)(pbVar16 + 0x2c);
           bVar18 = pbVar10 <= pbVar5;
           if ((pbVar10 < pbVar5) || (pbVar5 = pbVar10, bVar18)) goto _081DDC32;
         }
@@ -1387,7 +1387,7 @@ _081DDC18:
       else {
         bVar3 = true;
         uVar17 = (u32)pbVar16[0x13];
-        pbVar5 = *(byte **)(pbVar16 + 0x2c);
+        pbVar5 = *(u8 **)(pbVar16 + 0x2c);
 _081DDC32:
         pbVar10 = pbVar5;
         pbVar15 = pbVar16;
@@ -1399,13 +1399,13 @@ _081DDC34:
       uVar12 = uVar13;
       pbVar5 = pbVar15;
     } while (uVar13 != 0 && bVar18);
-    if (pbVar15 == (byte *)0x0) goto _081DDCEA;
+    if (pbVar15 == (u8 *)0x0) goto _081DDCEA;
   }
   else {
     if (*(s32 *)(iVar4 + 0x1c) == 0) goto _081DDCEA;
-    pbVar15 = (byte *)(*(s32 *)(iVar4 + 0x1c) + ((bVar1 & 7) - 1) * 0x40);
+    pbVar15 = (u8 *)(*(s32 *)(iVar4 + 0x1c) + ((bVar1 & 7) - 1) * 0x40);
     if (((((*pbVar15 & 199) != 0) && ((*pbVar15 & 0x40) == 0)) && (uVar11 <= pbVar15[0x13])) &&
-       ((pbVar15[0x13] != uVar11 || (*(byte **)(pbVar15 + 0x2c) < param_3)))) goto _081DDCEA;
+       ((pbVar15[0x13] != uVar11 || (*(u8 **)(pbVar15 + 0x2c) < param_3)))) goto _081DDCEA;
   }
 _081DDC40:
   ClearChain(pbVar15);
@@ -1413,10 +1413,10 @@ _081DDC40:
   iVar14 = *(s32 *)(param_3 + 0x20);
   *(s32 *)(pbVar15 + 0x34) = iVar14;
   if (iVar14 != 0) {
-    *(byte **)(iVar14 + 0x30) = pbVar15;
+    *(u8 **)(iVar14 + 0x30) = pbVar15;
   }
-  *(byte **)(param_3 + 0x20) = pbVar15;
-  *(byte **)(pbVar15 + 0x2c) = param_3;
+  *(u8 **)(param_3 + 0x20) = pbVar15;
+  *(u8 **)(pbVar15 + 0x2c) = param_3;
   bVar2 = param_3[0x1b];
   param_3[0x1c] = bVar2;
   if (bVar2 != 0) {
@@ -1424,7 +1424,7 @@ _081DDC40:
   }
   TrkVolPitSet(param_2,param_3);
   *(undefined4 *)(pbVar15 + 0x10) = *(undefined4 *)(param_3 + 4);
-  pbVar15[0x13] = (byte)uVar11;
+  pbVar15[0x13] = (u8)uVar11;
   pbVar15[8] = bVar8;
   pbVar15[0x14] = bVar7;
   pbVar15[1] = *pbVar9;
@@ -1455,94 +1455,4 @@ _081DDC40:
   *param_3 = *param_3 & 0xf0;
 _081DDCEA:
   return CONCAT44(unaff_r9,in_lr);
-}
-
-
-
-void ply_endtie(undefined4 param_1,s32 param_2)
-
-{
-  byte bVar1;
-  byte *pbVar2;
-  byte bVar3;
-  
-  bVar3 = **(byte **)(param_2 + 0x40);
-  if (bVar3 < 0x80) {
-    *(byte *)(param_2 + 5) = bVar3;
-    *(byte **)(param_2 + 0x40) = *(byte **)(param_2 + 0x40) + 1;
-  }
-  else {
-    bVar3 = *(byte *)(param_2 + 5);
-  }
-  pbVar2 = *(byte **)(param_2 + 0x20);
-  while( true ) {
-    if (pbVar2 == (byte *)0x0) {
-      return;
-    }
-    bVar1 = *pbVar2;
-    if ((((bVar1 & 0x83) != 0) && ((bVar1 & 0x40) == 0)) && (pbVar2[0x11] == bVar3)) break;
-    pbVar2 = *(byte **)(pbVar2 + 0x34);
-  }
-  *pbVar2 = bVar1 | 0x40;
-  return;
-}
-
-
-
-void clear_modM(undefined4 param_1,byte *param_2)
-
-{
-  byte bVar1;
-  
-  param_2[0x16] = 0;
-  param_2[0x1a] = 0;
-  if (param_2[0x18] == 0) {
-    bVar1 = 0xc;
-  }
-  else {
-    bVar1 = 3;
-  }
-  *param_2 = *param_2 | bVar1;
-  return;
-}
-
-
-
-void ld_r3_tp_adr_i_unchecked(undefined4 param_1,s32 param_2)
-
-{
-  *(s32 *)(param_2 + 0x40) = *(s32 *)(param_2 + 0x40) + 1;
-  return;
-}
-
-
-
-void ply_lfos(void)
-
-{
-  s32 extraout_r1;
-  s32 in_r3;
-  
-  ld_r3_tp_adr_i_unchecked();
-  *(char *)(extraout_r1 + 0x19) = (char)in_r3;
-  if (in_r3 == 0) {
-    clear_modM();
-  }
-  return;
-}
-
-
-
-void ply_mod(void)
-
-{
-  s32 extraout_r1;
-  s32 in_r3;
-  
-  ld_r3_tp_adr_i_unchecked();
-  *(char *)(extraout_r1 + 0x17) = (char)in_r3;
-  if (in_r3 == 0) {
-    clear_modM();
-  }
-  return;
 }

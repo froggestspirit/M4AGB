@@ -1330,7 +1330,7 @@ void m4aMPlayPanpotControl(struct MusicPlayerInfo *mplayInfo, u16 trackBits, s8 
     mplayInfo->ident = ID_NUMBER;
 }
 
-void ClearModM(struct MusicPlayerTrack *track)
+void ClearModM(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
 {
     track->lfoSpeedC = 0;
     track->modM = 0;
@@ -1365,7 +1365,7 @@ void m4aMPlayModDepthSet(struct MusicPlayerInfo *mplayInfo, u16 trackBits, u8 mo
                 track->mod = modDepth;
 
                 if (!track->mod)
-                    ClearModM(track);
+                    ClearModM(mplayInfo, track);
             }
         }
 
@@ -1401,7 +1401,7 @@ void m4aMPlayLFOSpeedSet(struct MusicPlayerInfo *mplayInfo, u16 trackBits, u8 lf
                 track->lfoSpeed = lfoSpeed;
 
                 if (!track->lfoSpeed)
-                    ClearModM(track);
+                    ClearModM(mplayInfo, track);
             }
         }
 
@@ -1760,7 +1760,6 @@ void SetPokemonCryPriority(u8 val)
 }
 
 void ChnVolSetAsm(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
-
 {
     u32 uVar1;
 
@@ -1770,5 +1769,35 @@ void ChnVolSetAsm(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *tr
     uVar1 = (track->chan->velocity * (0x7f - track->chan->rhythmPan) * track->volML) >> 0xe;
     if (uVar1 > 0xff) uVar1 = 0xff;
     track->chan->leftVolume = uVar1;
-    return;
+}
+
+void ply_lfos(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+{
+    track->lfoSpeed = *track->cmdPtr;
+    track->cmdPtr++;
+    if (track->lfoSpeed == 0) ClearModM(mplayInfo, track);
+}
+
+void ply_mod(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+{
+    track->mod = *track->cmdPtr;
+    track->cmdPtr++;
+    if (track->mod == 0) ClearModM(mplayInfo, track);
+}
+
+void ply_endtie(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+{
+    struct SoundChannel *tempChan;
+
+    if (*track->cmdPtr < 0x80) {
+        track->key = *track->cmdPtr;
+        track->cmdPtr++;
+    }
+    tempChan = track->chan;
+    while(TRUE) {
+        if (&tempChan == 0) return;
+        if ((((tempChan->statusFlags & (SOUND_CHANNEL_SF_START | SOUND_CHANNEL_SF_ENV)) != 0) && ((tempChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0)) && (tempChan->midiKey == track->key)) break;
+        tempChan = tempChan->nextChannelPointer;
+    }
+    tempChan->statusFlags |= 0x40;
 }

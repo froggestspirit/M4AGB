@@ -1702,7 +1702,7 @@ _081DDC54:
 	cmp r0, r1
 	beq _081DDC66
 	adds r1, r5, 0
-	bl clear_modM
+	bl ClearModM
 _081DDC66:
 	ldr r0, [sp]
 	adds r1, r5, 0
@@ -1783,98 +1783,7 @@ _081DDCEA:
 	.pool
 	thumb_func_end ply_note
 
-	thumb_func_start ply_endtie
-ply_endtie:
-	push {r4,r5}
-	ldr r2, [r1, o_MusicPlayerTrack_cmdPtr]
-	ldrb r3, [r2]
-	cmp r3, 0x80
-	bhs _081DDD16
-	strb r3, [r1, o_MusicPlayerTrack_key]
-	adds r2, 0x1
-	str r2, [r1, o_MusicPlayerTrack_cmdPtr]
-	b _081DDD18
-_081DDD16:
-	ldrb r3, [r1, o_MusicPlayerTrack_key]
-_081DDD18:
-	ldr r1, [r1, o_MusicPlayerTrack_chan]
-	cmp r1, 0
-	beq _081DDD40
-	movs r4, SOUND_CHANNEL_SF_START | SOUND_CHANNEL_SF_ENV
-	movs r5, SOUND_CHANNEL_SF_STOP
-_081DDD22:
-	ldrb r2, [r1, o_SoundChannel_statusFlags]
-	tst r2, r4
-	beq _081DDD3A
-	tst r2, r5
-	bne _081DDD3A
-	ldrb r0, [r1, o_SoundChannel_midiKey]
-	cmp r0, r3
-	bne _081DDD3A
-	movs r0, SOUND_CHANNEL_SF_STOP
-	orrs r2, r0
-	strb r2, [r1, o_SoundChannel_statusFlags]
-	b _081DDD40
-_081DDD3A:
-	ldr r1, [r1, o_SoundChannel_nextChannelPointer]
-	cmp r1, 0
-	bne _081DDD22
-_081DDD40:
-	pop {r4,r5}
-	bx lr
-	thumb_func_end ply_endtie
 
-	thumb_func_start clear_modM
-clear_modM:
-	movs r2, 0
-	strb r2, [r1, o_MusicPlayerTrack_modM]
-	strb r2, [r1, o_MusicPlayerTrack_lfoSpeedC]
-	ldrb r2, [r1, o_MusicPlayerTrack_modT]
-	cmp r2, 0
-	bne _081DDD54
-	movs r2, MPT_FLG_PITCHG
-	b _081DDD56
-_081DDD54:
-	movs r2, MPT_FLG_VOLCHG
-_081DDD56:
-	ldrb r3, [r1, o_MusicPlayerTrack_flags]
-	orrs r3, r2
-	strb r3, [r1, o_MusicPlayerTrack_flags]
-	bx lr
-	thumb_func_end clear_modM
-
-	thumb_func_start ld_r3_tp_adr_i
-ld_r3_tp_adr_i_unchecked:
-	ldr r2, [r1, o_MusicPlayerTrack_cmdPtr]
-	adds r3, r2, 1
-	str r3, [r1, o_MusicPlayerTrack_cmdPtr]
-	ldrb r3, [r2]
-	bx lr
-	thumb_func_end ld_r3_tp_adr_i
-
-	thumb_func_start ply_lfos
-ply_lfos:
-	mov r12, lr
-	bl ld_r3_tp_adr_i_unchecked
-	strb r3, [r1, o_MusicPlayerTrack_lfoSpeed]
-	cmp r3, 0
-	bne _081DDD7C
-	bl clear_modM
-_081DDD7C:
-	bx r12
-	thumb_func_end ply_lfos
-
-	thumb_func_start ply_mod
-ply_mod:
-	mov r12, lr
-	bl ld_r3_tp_adr_i_unchecked
-	strb r3, [r1, o_MusicPlayerTrack_mod]
-	cmp r3, 0
-	bne _081DDD90
-	bl clear_modM
-_081DDD90:
-	bx r12
-	thumb_func_end ply_mod
 
 	.align 2, 0 @ Don't pad with nop.
 
