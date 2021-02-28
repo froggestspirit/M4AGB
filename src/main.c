@@ -1,4 +1,4 @@
-#include "global.h"
+#include "gba/gba.h"
 #include "crt0.h"
 #include "m4a.h"
 #include "main.h"

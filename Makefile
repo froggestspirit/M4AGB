@@ -31,11 +31,10 @@ else
 EXE :=
 endif
 
-TITLE       := POKEMON EMER
-GAME_CODE   := BPEE
+TITLE       := M4A         
+GAME_CODE   := M4A 
 MAKER_CODE  := 01
 REVISION    := 0
-MODERN      ?= 0
 
 SHELL := /bin/bash -o pipefail
 
@@ -50,7 +49,6 @@ DATA_ASM_SUBDIR = data
 SONG_SUBDIR = sound/songs
 MID_SUBDIR = sound/songs/midi
 SAMPLE_SUBDIR = sound/direct_sound_samples
-CRY_SUBDIR = sound/direct_sound_samples/cries
 
 C_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)
 GFLIB_BUILDDIR = $(OBJ_DIR)/$(GFLIB_SUBDIR)
@@ -59,26 +57,15 @@ DATA_ASM_BUILDDIR = $(OBJ_DIR)/$(DATA_ASM_SUBDIR)
 SONG_BUILDDIR = $(OBJ_DIR)/$(SONG_SUBDIR)
 MID_BUILDDIR = $(OBJ_DIR)/$(MID_SUBDIR)
 
-ASFLAGS := -mcpu=arm7tdmi --defsym MODERN=$(MODERN)
+ASFLAGS := -mcpu=arm7tdmi
 
-ifeq ($(MODERN),0)
-CC1             := tools/agbcc/bin/agbcc$(EXE)
-override CFLAGS += -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -fhex-asm -g
-ROM := pokeemerald.gba
-OBJ_DIR := build/emerald
-LIBPATH := -L ../../tools/agbcc/lib
-else
 CC1              = $(shell $(CC) --print-prog-name=cc1) -quiet
 override CFLAGS += -mthumb -mthumb-interwork -O2 -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -g
-ROM := pokeemerald_modern.gba
-OBJ_DIR := build/modern
+ROM := m4a.gba
+OBJ_DIR := build/m4a
 LIBPATH := -L "$(dir $(shell $(CC) -mthumb -print-file-name=libgcc.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libc.a))"
-endif
 
-CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -DMODERN=$(MODERN)
-ifeq ($(MODERN),0)
-CPPFLAGS += -I tools/agbcc/include -I tools/agbcc
-endif
+CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs
 
 LDFLAGS = -Map ../../$(MAP)
 
@@ -187,13 +174,7 @@ mostlyclean: tidy
 tidy:
 	rm -f $(ROM) $(ELF) $(MAP)
 	rm -r $(OBJ_DIR)
-ifeq ($(MODERN),0)
-	@$(MAKE) tidy MODERN=1
-endif
 
-ifneq ($(MODERN),0)
-$(C_BUILDDIR)/berry_crush.o: override CFLAGS += -Wno-address-of-packed-member
-endif
 
 include songs.mk
 
@@ -213,24 +194,7 @@ $(CRY_SUBDIR)/%.bin: $(CRY_SUBDIR)/%.aif ; $(AIF) $< $@ --compress
 sound/%.bin: sound/%.aif ; $(AIF) $< $@
 
 
-ifeq ($(MODERN),0)
-$(C_BUILDDIR)/libc.o: CC1 := tools/agbcc/bin/old_agbcc
-$(C_BUILDDIR)/libc.o: CFLAGS := -O2
-
-$(C_BUILDDIR)/siirtc.o: CFLAGS := -mthumb-interwork
-
-$(C_BUILDDIR)/agb_flash.o: CFLAGS := -O -mthumb-interwork
-$(C_BUILDDIR)/agb_flash_1m.o: CFLAGS := -O -mthumb-interwork
-$(C_BUILDDIR)/agb_flash_mx.o: CFLAGS := -O -mthumb-interwork
-
-$(C_BUILDDIR)/m4a.o: CC1 := tools/agbcc/bin/old_agbcc
-
-$(C_BUILDDIR)/record_mixing.o: CFLAGS += -ffreestanding
-$(C_BUILDDIR)/librfu_intr.o: CC1 := tools/agbcc/bin/agbcc_arm
-$(C_BUILDDIR)/librfu_intr.o: CFLAGS := -O2 -mthumb-interwork -quiet
-else
 $(C_BUILDDIR)/librfu_intr.o: CFLAGS := -mthumb-interwork -O2 -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast
-endif
 
 ifeq ($(NODEP),1)
 $(C_BUILDDIR)/%.o: c_dep :=
@@ -309,13 +273,8 @@ $(OBJ_DIR)/sym_common.ld: sym_common.txt $(C_OBJS) $(wildcard common_syms/*.txt)
 $(OBJ_DIR)/sym_ewram.ld: sym_ewram.txt
 	$(RAMSCRGEN) ewram_data $< ENGLISH > $@
 
-ifeq ($(MODERN),0)
 LD_SCRIPT := ld_script.txt
-LD_SCRIPT_DEPS := $(OBJ_DIR)/sym_bss.ld $(OBJ_DIR)/sym_common.ld $(OBJ_DIR)/sym_ewram.ld
-else
-LD_SCRIPT := ld_script_modern.txt
 LD_SCRIPT_DEPS := 
-endif
 
 $(OBJ_DIR)/ld_script.ld: $(LD_SCRIPT) $(LD_SCRIPT_DEPS)
 	cd $(OBJ_DIR) && sed "s#tools/#../../tools/#g" ../../$(LD_SCRIPT) > ld_script.ld
@@ -327,8 +286,6 @@ $(ELF): $(OBJ_DIR)/ld_script.ld $(OBJS) libagbsyscall
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary $< $@
 	$(FIX) $@ -p --silent
-
-modern: ; @$(MAKE) MODERN=1
 
 libagbsyscall:
 	@$(MAKE) -C libagbsyscall TOOLCHAIN=$(TOOLCHAIN)

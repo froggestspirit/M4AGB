@@ -1,4 +1,3 @@
-#include "constants/global.h"
 	.include "constants/gba_constants.inc"
 
 	.syntax unified
@@ -14,38 +13,6 @@ Start: @ 8000000
 
 	.include "asm/rom_header.inc"
 
-@ 80000C0
-	.word 0
-
-	.global GPIOPortData
-GPIOPortData: @ 80000C4
-	.2byte 0
-
-	.global GPIOPortDirection
-GPIOPortDirection: @ 80000C6
-	.2byte 0
-
-	.global GPIOPortReadEnable
-GPIOPortReadEnable: @ 80000C8
-	.2byte 0
-
-@ 80000CA
-	.2byte 0
-
-@ 80000CC
-	.space 0x34
-
-	.4byte GAME_VERSION
-	.4byte GAME_LANGUAGE
-
-	.ascii "pokemon emerald version"
-	.space 9
-
-
-
-	.arm
-	.align 2, 0
-	.global Init
 Init: @ 8000204
 	mov r0, #PSR_IRQ_MODE
 	msr cpsr_cf, r0
@@ -56,10 +23,8 @@ Init: @ 8000204
 	ldr r1, =INTR_VECTOR
 	adr r0, IntrMain
 	str r0, [r1]
-	.if MODERN
 	mov r0, #255 @ RESET_ALL
 	svc #1 << 16
-	.endif @ MODERN
 	ldr r1, =AgbMain + 1
 	mov lr, pc
 	bx r1
