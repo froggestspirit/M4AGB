@@ -62,7 +62,7 @@ struct ToneData
     u8 pan_sweep; // pan or sweep (compatible sound ch. 1)
     union{
         struct WaveData *wav;
-        struct ToneData *subInstrument
+        struct ToneData *subInstrument;
     };
     union{
         struct{
