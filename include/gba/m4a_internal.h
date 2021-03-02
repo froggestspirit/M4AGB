@@ -56,15 +56,23 @@ struct WaveData
 
 struct ToneData
 {
-    u8 type;
+    u8 type; //0x24
     u8 key;
     u8 length; // sound length (compatible sound)
     u8 pan_sweep; // pan or sweep (compatible sound ch. 1)
-    struct WaveData *wav;
-    u8 attack;
-    u8 decay;
-    u8 sustain;
-    u8 release;
+    union{
+        struct WaveData *wav;
+        struct ToneData *subInstrument
+    };
+    union{
+        struct{
+            u8 attack; //0x2C
+            u8 decay;
+            u8 sustain;
+            u8 release;
+        };
+        u8 *keySplitTable;
+    };
 };
 
 #define SOUND_CHANNEL_SF_START       0x80
@@ -102,7 +110,7 @@ struct CgbChannel
     u8 pseudoEchoLength;
     u8 dummy1;
     u8 dummy2;
-    u8 gateTime;
+    u8 gateTime; //0x10
     u8 midiKey;
     u8 velocity;
     u8 priority;
@@ -116,11 +124,11 @@ struct CgbChannel
     u8 modify;
     u8 length;
     u8 sweep;
-    u32 frequency;
+    u32 frequency; //0x20
     u32 *wavePointer;       // instructs CgbMain to load targeted wave
     u32 *currentPointer;    // stores the currently loaded wave
     struct MusicPlayerTrack *track;
-    void *prevChannelPointer;
+    void *prevChannelPointer; //0x30
     void *nextChannelPointer;
     u8 dummy4[8];
 };
@@ -145,7 +153,7 @@ struct SoundChannel
     u8 pseudoEchoLength;
     u8 dummy1;
     u8 dummy2;
-    u8 gateTime;
+    u8 gateTime; //0x10
     u8 midiKey;         // midi key as it was used in the track data
     u8 velocity;
     u8 priority;
@@ -153,11 +161,11 @@ struct SoundChannel
     u8 dummy3[3];
     u32 count;
     u32 fw;
-    u32 frequency;
+    u32 frequency; //0x20
     struct WaveData *wav;
     s8 *currentPointer;
     struct MusicPlayerTrack *track;
-    void *prevChannelPointer;
+    void *prevChannelPointer; //0x30
     void *nextChannelPointer;
     u32 dummy4;
     u16 xpi;
@@ -199,20 +207,20 @@ struct SoundInfo
     u8 pcmDmaPeriod; // number of V-blanks per PCM DMA
     u8 maxLines;
     u8 gap[3];
-    s32 pcmSamplesPerVBlank;
+    s32 pcmSamplesPerVBlank; //0x10
     s32 pcmFreq;
     s32 divFreq;
     struct CgbChannel *cgbChans;
-    MPlayMainFunc MPlayMainHead;
+    MPlayMainFunc MPlayMainHead; //0x20
     struct MusicPlayerInfo *musicPlayerHead;
     CgbSoundFunc CgbSound;
     CgbOscOffFunc CgbOscOff;
-    MidiKeyToCgbFreqFunc MidiKeyToCgbFreq;
+    MidiKeyToCgbFreqFunc MidiKeyToCgbFreq; //0x30
     MPlayFunc *MPlayJumpTable;
     PlyNoteFunc plynote;
     ExtVolPitFunc ExtVolPit;
-    u8 gap2[16];
-    struct SoundChannel chans[MAX_DIRECTSOUND_CHANNELS];
+    u8 gap2[16]; //0x40
+    struct SoundChannel chans[MAX_DIRECTSOUND_CHANNELS]; //0x50
     s8 pcmBuffer[PCM_DMA_BUF_SIZE * 2];
 };
 
@@ -283,7 +291,7 @@ struct MusicPlayerTrack
     u8 pitX;
     s8 bend;
     u8 bendRange;
-    u8 volMR;
+    u8 volMR;//0x10
     u8 volML;
     u8 vol;
     u8 volX;
@@ -299,9 +307,9 @@ struct MusicPlayerTrack
     u8 priority;
     u8 pseudoEchoVolume;
     u8 pseudoEchoLength;
-    struct SoundChannel *chan;
-    struct ToneData tone;
-    u8 gap[10];
+    struct SoundChannel *chan; //0x20
+    struct ToneData tone; //0x24
+    u8 gap[10];//0x30
     u16 unk_3A;
     u32 unk_3C;
     u8 *cmdPtr;

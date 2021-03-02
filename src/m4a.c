@@ -2,6 +2,7 @@
 #include "gba/m4a_internal.h"
 
 extern const u8 gCgb3Vol[];
+extern const u8 gClockTable[];
 
 #define BSS_CODE __attribute__((section(".bss.code")))
 
@@ -1800,4 +1801,150 @@ void ply_endtie(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *trac
         tempChan = tempChan->nextChannelPointer;
     }
     tempChan->statusFlags |= 0x40;
+}
+
+
+void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+{
+    u8 bVar1;
+    bool8 bVar3;
+    struct SoundInfo *iVar4;
+    struct MusicPlayerTrack *pbVar5;
+    u8 bVar7;
+    u8 bVar8;
+    struct ToneData *pbVar9;
+    struct MusicPlayerTrack *pbVar10;
+    u32 uVar11;
+    u32 uVar12;
+    u32 uVar13;
+    int iVar14;
+    struct SoundChannel *pbVar15;
+    struct SoundChannel *pbVar16;
+    u32 uVar17;
+    struct WaveData *wav;
+    bool8 bVar18;
+
+    iVar4 = SOUND_INFO_PTR;
+    track->gateTime = gClockTable[param_1];
+    if (*track->cmdPtr < 0x80) {
+        track->key = *(track->cmdPtr++);
+        if (*track->cmdPtr < 0x80) {
+            track->velocity = *(track->cmdPtr++);
+            if (*track->cmdPtr < 0x80) {
+                track->gateTime += *(track->cmdPtr++);
+            }
+        }
+    }
+    
+    bVar7 = 0;
+    pbVar9 = &track->tone;
+    bVar1 = pbVar9->type;
+    bVar8 = track->key;
+    if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
+        bVar8 = track->key;
+        uVar11 = bVar8;
+        if (bVar1 & TONEDATA_TYPE_SPL) uVar11 = track->tone.keySplitTable[uVar11];
+        pbVar9 = (uVar11 * 0xc) + track->tone.subInstrument;
+        if (pbVar9->type & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) return;
+        if (bVar1 & TONEDATA_TYPE_RHY) {
+            if (pbVar9->pan_sweep & 0x80) {
+                bVar7 = (pbVar9->pan_sweep + 0x40) * 2;
+            }
+            bVar8 = pbVar9->key;
+        }
+    }
+    uVar11 = track->priority + mplayInfo->priority;
+    if (uVar11 > 0xff) uVar11 = 0xff;
+    bVar1 = pbVar9->type;
+    if (bVar1 & TONEDATA_TYPE_CGB == 0) {
+        bVar3 = FALSE;
+        pbVar16 = iVar4->chans;
+        uVar12 = iVar4->maxChans;
+        uVar17 = uVar11;
+        pbVar10 = track;
+        pbVar5 = NULL;
+        do {
+            pbVar15 = pbVar16;
+            if (pbVar16->statusFlags & SOUND_CHANNEL_SF_ON == 0) goto _081DDC40;
+            pbVar15 = pbVar5;
+            if (pbVar16->statusFlags & SOUND_CHANNEL_SF_STOP == 0) {
+                if (!bVar3) goto _081DDC18;
+                goto _081DDC34;
+            }
+            if (bVar3) {
+                _081DDC18:
+                uVar13 = pbVar16->priority;
+                if (uVar13 < uVar17) {
+                    uVar17 = uVar13;
+                    pbVar5 = pbVar16->track;
+                    goto _081DDC32;
+                }
+                if (uVar13 <= uVar17) {
+                    pbVar5 = pbVar16->track;
+                    bVar18 = (intptr_t)pbVar10 <= (intptr_t)pbVar5;
+                    if (((intptr_t)pbVar10 < (intptr_t)pbVar5) || (pbVar5 = pbVar10, bVar18)) goto _081DDC32;
+                }
+            }else{
+                bVar3 = TRUE;
+                uVar17 = pbVar16->priority;
+                pbVar5 = pbVar16->track;
+                _081DDC32:
+                pbVar10 = pbVar5;
+                pbVar15 = pbVar16;
+            }
+            _081DDC34:
+            pbVar16++; //set pbVar16 as the next sound channel
+            uVar13 = uVar12 - 1;
+            bVar18 = uVar12 > 0;
+            uVar12 = uVar13;
+            pbVar5 = pbVar15;
+        } while (uVar13 && bVar18);
+        if (pbVar15 == NULL) return;
+    }else{
+        if (iVar4->cgbChans == NULL) return;
+        pbVar15 = iVar4->cgbChans + (((bVar1 & TONEDATA_TYPE_CGB) - 1) * sizeof(struct CgbChannel));
+        if (((((pbVar15->statusFlags & SOUND_CHANNEL_SF_ON)) && ((pbVar15->statusFlags & SOUND_CHANNEL_SF_STOP) == 0)) && (uVar11 <= pbVar15->priority)) &&
+        ((pbVar15->priority != uVar11 || (pbVar15->track < track)))) return;
+    }
+    _081DDC40:
+    ClearChain(pbVar15);
+    pbVar15->prevChannelPointer = NULL;
+    pbVar15->nextChannelPointer = track->chan;
+    if (track->chan != NULL) track->chan->prevChannelPointer = pbVar15;
+    track->chan = pbVar15;
+    pbVar15->track = track;
+    track->lfoDelayC = track->lfoDelay;
+    if (track->lfoDelay != 0) ClearModM(mplayInfo, track);
+    TrkVolPitSet(mplayInfo, track);
+    pbVar15->gateTime = track->gateTime;
+    pbVar15->priority = uVar11;
+    pbVar15->key = bVar8;
+    pbVar15->rhythmPan = bVar7;
+    pbVar15->type = pbVar9->type;
+    pbVar15->wav = pbVar9->wav;
+    pbVar15->attack = pbVar9->attack;
+    pbVar15->decay = pbVar9->decay;
+    pbVar15->sustain = pbVar9->sustain;
+    pbVar15->release = pbVar9->release;
+    pbVar15->pseudoEchoVolume = track->pseudoEchoVolume;
+    pbVar15->pseudoEchoLength = track->pseudoEchoLength;
+    ChnVolSetAsm(mplayInfo, track);
+    iVar14 = pbVar15->key + track->keyM;
+    if (iVar14 < 0) iVar14 = 0;
+    if ((bVar1 & TONEDATA_TYPE_CGB) == 0) {
+        pbVar15->count = track->unk_3C;
+        pbVar15->frequency = MidiKeyToFreq(wav,iVar14,track->pitM);
+    }else{
+        struct CgbChannel *tempGBChan;
+        tempGBChan = pbVar15;
+        tempGBChan->length = pbVar9->length;
+        if ((pbVar9->pan_sweep & 0x80) || (pbVar9->pan_sweep & 0x70) == 0){
+            tempGBChan->sweep = 8;
+        }else{
+            tempGBChan->sweep = pbVar9->pan_sweep;
+        }
+        pbVar15->frequency = MidiKeyToCgbFreq(bVar1 & 7,iVar14,track->pitM);
+    }
+    pbVar15->statusFlags = SOUND_CHANNEL_SF_START;
+    track->flags &= 0xf0;
 }
