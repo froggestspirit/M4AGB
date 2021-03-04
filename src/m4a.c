@@ -1835,12 +1835,11 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
             }
         }
     }
-    
     bVar7 = 0;
     pbVar9 = &track->tone;
     bVar1 = pbVar9->type;
     bVar8 = track->key;
-    if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
+    /*if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
         bVar8 = track->key;
         uVar11 = bVar8;
         if (bVar1 & TONEDATA_TYPE_SPL) uVar11 = track->tone.keySplitTable[uVar11];
@@ -1852,10 +1851,11 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
             }
             bVar8 = pbVar9->key;
         }
-    }
+    }*/
     uVar11 = track->priority + mplayInfo->priority;
     if (uVar11 > 0xff) uVar11 = 0xff;
     bVar1 = pbVar9->type;
+    tempChan = iVar4->chans;
     if (bVar1 & TONEDATA_TYPE_CGB == 0) {
         done = FALSE;
         findChan = iVar4->chans;
@@ -1901,11 +1901,11 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
         } while (uVar13 && bVar18);
         if (tempChan == NULL) return;
     }else{
-        if (iVar4->cgbChans == NULL) return;
+        /*if (iVar4->cgbChans == NULL) return;
         struct CgbChannel *tempGBChan = &iVar4->cgbChans[(bVar1 & TONEDATA_TYPE_CGB) - 1];
         tempChan = tempGBChan;
         if (((((tempChan->statusFlags & SOUND_CHANNEL_SF_ON)) && ((tempChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0)) && (uVar11 <= tempChan->priority)) &&
-        ((tempChan->priority != uVar11 || (tempChan->track < track)))) return;
+        ((tempChan->priority != uVar11 || (tempChan->track < track)))) return;*/
     }
     _081DDC40:
     ClearChain(tempChan);
@@ -1918,6 +1918,9 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
     if (track->lfoDelay != 0) ClearModM(mplayInfo, track);
     TrkVolPitSet(mplayInfo, track);
     tempChan->gateTime = track->gateTime;
+    tempChan->midiKey = track->key;
+    tempChan->velocity = track->velocity;
+    tempChan->priority = track->runningStatus;
     tempChan->priority = uVar11;
     tempChan->key = bVar8;
     tempChan->rhythmPan = bVar7;
@@ -1934,7 +1937,7 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
     if (iVar14 < 0) iVar14 = 0;
     if ((bVar1 & TONEDATA_TYPE_CGB) == 0) {
         tempChan->count = track->unk_3C;
-        tempChan->frequency = MidiKeyToFreq(wav,iVar14,track->pitM);
+        tempChan->frequency = MidiKeyToFreq(tempChan->wav,iVar14,track->pitM);
     }else{
         struct CgbChannel *tempGBChan;
         tempGBChan = tempChan;

@@ -1503,7 +1503,6 @@ TrackStop_Done:
 	.pool
 	thumb_func_end TrackStop
 
-
 	.align 2, 0 @ Don't pad with nop.
 
     .bss
