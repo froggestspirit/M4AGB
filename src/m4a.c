@@ -1837,13 +1837,12 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
     }
     bVar7 = 0;
     pbVar9 = &track->tone;
-    bVar1 = pbVar9->type;
+    bVar1 = track->tone.type;
     bVar8 = track->key;
-    /*if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
-        bVar8 = track->key;
-        uVar11 = bVar8;
-        if (bVar1 & TONEDATA_TYPE_SPL) uVar11 = track->tone.keySplitTable[uVar11];
-        pbVar9 = (uVar11 * 0xc) + track->tone.subInstrument;
+    if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
+        uVar11 = 12 * track->key;
+        if (bVar1 & TONEDATA_TYPE_SPL) uVar11 = track->tone.keySplitTable[track->key] * 12;
+        pbVar9 = uVar11 + track->tone.subInstrument;
         if (pbVar9->type & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) return;
         if (bVar1 & TONEDATA_TYPE_RHY) {
             if (pbVar9->pan_sweep & 0x80) {
@@ -1851,7 +1850,7 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
             }
             bVar8 = pbVar9->key;
         }
-    }*/
+    }
     uVar11 = track->priority + mplayInfo->priority;
     if (uVar11 > 0xff) uVar11 = 0xff;
     bVar1 = pbVar9->type;
