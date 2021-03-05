@@ -2,6 +2,7 @@
 #include "crt0.h"
 #include "m4a.h"
 #include "main.h"
+#include "mgba.h"
 
 static void VBlankIntr(void);
 static void VCountIntr(void);
@@ -46,6 +47,7 @@ void AgbMain()
 {
     InitIntrHandlers();
     EnableVCountIntrAtLine150();
+    mgba_open();
     m4aSoundInit();
     m4aSongNumStart(0);
     for (;;)

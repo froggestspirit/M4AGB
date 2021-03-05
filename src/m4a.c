@@ -1,5 +1,6 @@
 #include <string.h>
 #include "gba/m4a_internal.h"
+#include "mgba.h"
 
 extern const u8 gCgb3Vol[];
 extern const u8 gClockTable[];
@@ -1807,7 +1808,7 @@ void ply_endtie(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *trac
 void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
 {
     u8 bVar1;
-    bool8 done;
+    bool8 stoppingChan;
     struct SoundInfo *iVar4;
     struct MusicPlayerTrack *findTrack;
     u8 bVar7;
@@ -1853,60 +1854,54 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
     }
     uVar11 = track->priority + mplayInfo->priority;
     if (uVar11 > 0xff) uVar11 = 0xff;
-    bVar1 = pbVar9->type;
     tempChan = iVar4->chans;
-    if (bVar1 & TONEDATA_TYPE_CGB == 0) {
-        done = FALSE;
+    if ((bVar1 & TONEDATA_TYPE_CGB) == 0) {
+        stoppingChan = FALSE;
         findChan = iVar4->chans;
-        uVar12 = iVar4->maxChans;
         uVar17 = uVar11;
         tempTrack = track;
         findTrack = NULL;
-        do {
-            tempChan = findChan;
-            if (findChan->statusFlags & SOUND_CHANNEL_SF_ON == 0) goto _081DDC40;
-            tempChan = findTrack;
-            if (findChan->statusFlags & SOUND_CHANNEL_SF_STOP == 0) {
-                if (!done) goto _081DDC18;
-                goto _081DDC34;
-            }
-            if (done) {
-                _081DDC18:
-                uVar13 = findChan->priority;
-                if (uVar13 < uVar17) {
-                    uVar17 = uVar13;
-                    findTrack = findChan->track;
-                    goto _081DDC32;
-                }
-                if (uVar13 <= uVar17) {
-                    findTrack = findChan->track;
-                    bVar18 = (intptr_t)tempTrack <= (intptr_t)findTrack;
-                    if (((intptr_t)tempTrack < (intptr_t)findTrack) || (findTrack = tempTrack, bVar18)) goto _081DDC32;
-                }
-            }else{
-                done = TRUE;
-                uVar17 = findChan->priority;
-                findTrack = findChan->track;
-                _081DDC32:
-                tempTrack = findTrack;
+        uVar13 = uVar12;
+        bVar18 = TRUE;
+        tempChan = NULL;
+        u8 tempPriority = 0xFF;
+        for(u8 i = 0; i < iVar4->maxChans; i++){
+            if((findChan->statusFlags & SOUND_CHANNEL_SF_ON) == 0){
                 tempChan = findChan;
+                break;
             }
-            _081DDC34:
-            findChan++; //set findChan as the next sound channel
-            uVar13 = uVar12 - 1;
-            bVar18 = uVar12 > 0;
-            uVar12 = uVar13;
-            findTrack = tempChan;
-        } while (uVar13 && bVar18);
-        if (tempChan == NULL) return;
+            if((findChan->statusFlags & SOUND_CHANNEL_SF_STOP) && !stoppingChan){
+                    tempChan = findChan;
+                    tempTrack = findChan->track;
+                    tempPriority = findChan->priority;
+                    stoppingChan = TRUE;
+            }else if((findChan->statusFlags & SOUND_CHANNEL_SF_STOP && stoppingChan)
+                || ((findChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0 && !stoppingChan)) {
+                if(findChan->priority < tempPriority) {
+                    tempChan = findChan;
+                    tempTrack = findChan->track;
+                    tempPriority = findChan->priority;
+                }else if(findChan->priority == tempPriority && findChan->track > tempTrack) {
+					tempChan = findChan;
+					tempTrack = findChan->track;
+				} else if (findChan->priority == tempPriority && findChan->track == tempTrack) {
+					tempChan = findChan;
+				}
+            }
+            findChan++;
+        }
     }else{
-        /*if (iVar4->cgbChans == NULL) return;
-        struct CgbChannel *tempGBChan = &iVar4->cgbChans[(bVar1 & TONEDATA_TYPE_CGB) - 1];
-        tempChan = tempGBChan;
-        if (((((tempChan->statusFlags & SOUND_CHANNEL_SF_ON)) && ((tempChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0)) && (uVar11 <= tempChan->priority)) &&
-        ((tempChan->priority != uVar11 || (tempChan->track < track)))) return;*/
+        if (iVar4->cgbChans == NULL) return;
+        tempChan = iVar4->cgbChans + (bVar1 & TONEDATA_TYPE_CGB) - 1;
+        if ((tempChan->statusFlags & SOUND_CHANNEL_SF_ON) && (tempChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0) {
+			if (tempChan->priority > uVar11 || (tempChan->priority == uVar11 && tempChan->track < track)) {
+				return;
+			}
+		}
     }
+    if (tempChan == NULL) return;
     _081DDC40:
+    mgba_printf(MGBA_LOG_WARN, "tempChan:%x", tempChan);
     ClearChain(tempChan);
     tempChan->prevChannelPointer = NULL;
     tempChan->nextChannelPointer = track->chan;
