@@ -1805,28 +1805,10 @@ void ply_endtie(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *trac
 }
 
 
-void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
+void ply_note(u32 time, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track)
 {
-    u8 bVar1;
-    bool8 stoppingChan;
-    struct SoundInfo *iVar4;
-    struct MusicPlayerTrack *findTrack;
-    u8 bVar7;
-    u8 bVar8;
-    struct ToneData *pbVar9;
-    struct MusicPlayerTrack *tempTrack;
-    u32 uVar11;
-    u32 uVar12;
-    u32 uVar13;
-    int iVar14;
-    struct SoundChannel *tempChan;
-    struct SoundChannel *findChan;
-    u32 uVar17;
-    struct WaveData *wav;
-    bool8 bVar18;
-
-    iVar4 = SOUND_INFO_PTR;
-    track->gateTime = gClockTable[param_1];
+    struct SoundInfo *mixer = SOUND_INFO_PTR;
+    track->gateTime = gClockTable[time];
     if (*track->cmdPtr < 0x80) {
         track->key = *(track->cmdPtr++);
         if (*track->cmdPtr < 0x80) {
@@ -1836,36 +1818,32 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
             }
         }
     }
-    bVar7 = 0;
-    pbVar9 = &track->tone;
-    bVar1 = track->tone.type;
-    bVar8 = track->key;
-    if (bVar1 & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
-        uVar11 = 12 * track->key;
-        if (bVar1 & TONEDATA_TYPE_SPL) uVar11 = track->tone.keySplitTable[track->key] * 12;
-        pbVar9 = uVar11 + track->tone.subInstrument;
-        if (pbVar9->type & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) return;
-        if (bVar1 & TONEDATA_TYPE_RHY) {
-            if (pbVar9->pan_sweep & 0x80) {
-                bVar7 = (pbVar9->pan_sweep + 0x40) * 2;
+    u8 panSweep = 0;
+    struct ToneData *inst = &track->tone;
+    u8 instType = track->tone.type;
+    u8 instKey = track->key;
+    if (instType & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) {
+        u32 instIndex = 12 * track->key;
+        if (instType & TONEDATA_TYPE_SPL) instIndex = track->tone.keySplitTable[track->key] * 12;
+        inst = instIndex + track->tone.subInstrument;
+        if (inst->type & (TONEDATA_TYPE_RHY | TONEDATA_TYPE_SPL)) return;
+        if (instType & TONEDATA_TYPE_RHY) {
+            if (inst->pan_sweep & 0x80) {
+                panSweep = (inst->pan_sweep + 0x40) * 2;
             }
-            bVar8 = pbVar9->key;
+            instKey = inst->key;
         }
     }
-    uVar11 = track->priority + mplayInfo->priority;
-    if (uVar11 > 0xff) uVar11 = 0xff;
-    tempChan = iVar4->chans;
-    if ((bVar1 & TONEDATA_TYPE_CGB) == 0) {
-        stoppingChan = FALSE;
-        findChan = iVar4->chans;
-        uVar17 = uVar11;
-        tempTrack = track;
-        findTrack = NULL;
-        uVar13 = uVar12;
-        bVar18 = TRUE;
+    u32 priority = track->priority + mplayInfo->priority;
+    if (priority > 0xff) priority = 0xff;
+    struct SoundChannel *tempChan = mixer->chans;
+    if ((instType & TONEDATA_TYPE_CGB) == 0) {
+        bool8 stoppingChan = FALSE;
+        struct SoundChannel *findChan = mixer->chans;
+        struct MusicPlayerTrack *tempTrack = track;
         tempChan = NULL;
         u8 tempPriority = 0xFF;
-        for(u8 i = 0; i < iVar4->maxChans; i++){
+        for(u8 i = 0; i < mixer->maxChans; i++){
             if((findChan->statusFlags & SOUND_CHANNEL_SF_ON) == 0){
                 tempChan = findChan;
                 break;
@@ -1891,17 +1869,15 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
             findChan++;
         }
     }else{
-        if (iVar4->cgbChans == NULL) return;
-        tempChan = iVar4->cgbChans + (bVar1 & TONEDATA_TYPE_CGB) - 1;
+        if (mixer->cgbChans == NULL) return;
+        tempChan = mixer->cgbChans + (instType & TONEDATA_TYPE_CGB) - 1;
         if ((tempChan->statusFlags & SOUND_CHANNEL_SF_ON) && (tempChan->statusFlags & SOUND_CHANNEL_SF_STOP) == 0) {
-			if (tempChan->priority > uVar11 || (tempChan->priority == uVar11 && tempChan->track < track)) {
+			if (tempChan->priority > priority || (tempChan->priority == priority && tempChan->track < track)) {
 				return;
 			}
 		}
     }
     if (tempChan == NULL) return;
-    _081DDC40:
-    mgba_printf(MGBA_LOG_WARN, "tempChan:%x", tempChan);
     ClearChain(tempChan);
     tempChan->prevChannelPointer = NULL;
     tempChan->nextChannelPointer = track->chan;
@@ -1915,33 +1891,33 @@ void ply_note(u32 param_1, struct MusicPlayerInfo *mplayInfo, struct MusicPlayer
     tempChan->midiKey = track->key;
     tempChan->velocity = track->velocity;
     tempChan->priority = track->runningStatus;
-    tempChan->priority = uVar11;
-    tempChan->key = bVar8;
-    tempChan->rhythmPan = bVar7;
-    tempChan->type = pbVar9->type;
-    tempChan->wav = pbVar9->wav;
-    tempChan->attack = pbVar9->attack;
-    tempChan->decay = pbVar9->decay;
-    tempChan->sustain = pbVar9->sustain;
-    tempChan->release = pbVar9->release;
+    tempChan->priority = priority;
+    tempChan->key = instKey;
+    tempChan->rhythmPan = panSweep;
+    tempChan->type = inst->type;
+    tempChan->wav = inst->wav;
+    tempChan->attack = inst->attack;
+    tempChan->decay = inst->decay;
+    tempChan->sustain = inst->sustain;
+    tempChan->release = inst->release;
     tempChan->pseudoEchoVolume = track->pseudoEchoVolume;
     tempChan->pseudoEchoLength = track->pseudoEchoLength;
     ChnVolSetAsm(mplayInfo, track);
-    iVar14 = tempChan->key + track->keyM;
-    if (iVar14 < 0) iVar14 = 0;
-    if ((bVar1 & TONEDATA_TYPE_CGB) == 0) {
+    int key = tempChan->key + track->keyM;
+    if (key < 0) key = 0;
+    if ((instType & TONEDATA_TYPE_CGB) == 0) {
         tempChan->count = track->unk_3C;
-        tempChan->frequency = MidiKeyToFreq(tempChan->wav,iVar14,track->pitM);
+        tempChan->frequency = MidiKeyToFreq(tempChan->wav,key,track->pitM);
     }else{
         struct CgbChannel *tempGBChan;
         tempGBChan = tempChan;
-        tempGBChan->length = pbVar9->length;
-        if ((pbVar9->pan_sweep & 0x80) || (pbVar9->pan_sweep & 0x70) == 0){
+        tempGBChan->length = inst->length;
+        if ((inst->pan_sweep & 0x80) || (inst->pan_sweep & 0x70) == 0){
             tempGBChan->sweep = 8;
         }else{
-            tempGBChan->sweep = pbVar9->pan_sweep;
+            tempGBChan->sweep = inst->pan_sweep;
         }
-        tempChan->frequency = MidiKeyToCgbFreq(bVar1 & 7,iVar14,track->pitM);
+        tempChan->frequency = MidiKeyToCgbFreq(instType & 7,key,track->pitM);
     }
     tempChan->statusFlags = SOUND_CHANNEL_SF_START;
     track->flags &= 0xf0;
