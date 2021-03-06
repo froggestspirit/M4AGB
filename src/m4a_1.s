@@ -1124,8 +1124,8 @@ m4aSoundVSync_Done:
 	.pool
 	thumb_func_end m4aSoundVSync
 
-	thumb_func_start MPlayMain
-MPlayMain:
+	thumb_func_start MPlayMain2
+MPlayMain2:
 	ldr r2, lt2_ID_NUMBER
 	ldr r3, [r0, o_MusicPlayerInfo_ident]
 	cmp r2, r3
@@ -1461,7 +1461,7 @@ call_r3:
 lt_gClockTable:     .word gClockTable
 lt2_SOUND_INFO_PTR: .word SOUND_INFO_PTR
 lt2_ID_NUMBER:      .word ID_NUMBER
-	thumb_func_end MPlayMain
+	thumb_func_end MPlayMain2
 
 	thumb_func_start TrackStop
 TrackStop:

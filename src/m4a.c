@@ -1922,3 +1922,166 @@ void ply_note(u32 time, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTra
     tempChan->statusFlags = SOUND_CHANNEL_SF_START;
     track->flags &= 0xf0;
 }
+
+bool8 SCARRY4(u32 a, u32 b){
+    if(a + b > 0xFFFFFFFF) return 1;
+    return 0;
+}
+
+void MPlayMain(struct MusicPlayerInfo *mplayInfo)
+{
+    u32 uVar2;
+    s32 iVar3;
+    u32 uVar4;
+    u8 bVar5;
+    u8 *pbVar6;
+    u32 uVar7;
+    u32 uVar8;
+    u32 uVar9;
+    struct SoundChannel *pSVar10;
+    struct MusicPlayerTrack *pMVar11;
+    bool8 bVar12;
+
+    void (*MPlayMainNext)(struct MusicPlayerInfo*);
+    MPlayMainNext = mplayInfo->MPlayMainNext;
+    if (mplayInfo->ident != ID_NUMBER) return;
+    mplayInfo->ident = 0x68736d54;
+    if (mplayInfo->MPlayMainNext != NULL) MPlayMainNext(mplayInfo->musicPlayerNext);
+    struct SoundInfo *mixer = SOUND_INFO_PTR;
+    if ((mplayInfo->status & MUSICPLAYER_STATUS_PAUSE) || (FadeOutBody(mplayInfo), mplayInfo->status & MUSICPLAYER_STATUS_PAUSE)) {
+        mplayInfo->ident = ID_NUMBER;
+        return;
+    }
+    uVar2 = mplayInfo->tempoC + mplayInfo->tempoI;
+_081DD9BC:
+    mplayInfo->tempoC = (u16)uVar2;
+    if (0x95 < uVar2) {
+        pMVar11 = mplayInfo->tracks;
+        uVar8 = 1;
+        uVar9 = 0;
+        uVar2 = mplayInfo->trackCount;
+        do {
+            if ((pMVar11->flags & 0x80) != 0) {
+                uVar9 = uVar9 | uVar8;
+                pSVar10 = pMVar11->chan;
+                while (pSVar10 != NULL) {
+                    if ((pSVar10->statusFlags & 199) == 0) {
+                        ClearChain(pSVar10);
+                    }else{
+                        if ((pSVar10->gateTime != 0) &&
+                        (iVar3 = pSVar10->gateTime - 1, pSVar10->gateTime = (u8)iVar3, iVar3 == 0)) pSVar10->statusFlags = pSVar10->statusFlags | 0x40;
+                    }
+                    pSVar10 = pSVar10->nextChannelPointer;
+                }
+                if ((pMVar11->flags & 0x40) != 0) {
+                    Clear64byte(pMVar11);
+                    pMVar11->flags = -0x80;
+                    pMVar11->bendRange = '\x02';
+                    pMVar11->volX = '@';
+                    pMVar11->lfoSpeed = '\x16';
+                    (pMVar11->tone).type = '\x01';
+                }
+                do {
+                    while( TRUE ) {
+                        while( TRUE ) {
+                            if (pMVar11->wait != '\0') {
+                                pMVar11->wait = pMVar11->wait + -1;
+                                if ((pMVar11->lfoSpeed != 0) && (pMVar11->mod != '\0')) {
+                                    if (pMVar11->lfoDelayC == '\0') {
+                                        iVar3 = pMVar11->lfoSpeedC + pMVar11->lfoSpeed;
+                                        pMVar11->lfoSpeedC = iVar3;
+                                        if ((iVar3 + -0x40) * 0x1000000 < 0) {
+                                            iVar3 = (s32)(char)(u8)iVar3;
+                                        }else{
+                                            iVar3 = 0x80 - iVar3;
+                                        }
+                                        uVar7 = (s32)(iVar3 * (u32)pMVar11->mod) >> 6;
+                                        if ((((u8)pMVar11->modM ^ uVar7) & 0xff) != 0) {
+                                            pMVar11->modM = (s8)uVar7;
+                                            if (pMVar11->modT == '\0') {
+                                                bVar5 = 0xc;
+                                            }else{
+                                                bVar5 = 3;
+                                            }
+                                            pMVar11->flags = pMVar11->flags | bVar5;
+                                        }
+                                    }else{
+                                        pMVar11->lfoDelayC = pMVar11->lfoDelayC + -1;
+                                    }
+                                }
+                                goto _081DD998;
+                            }
+                            pbVar6 = pMVar11->cmdPtr;
+                            bVar5 = *pbVar6;
+                            uVar7 = (u32)bVar5;
+                            if (uVar7 < 0x80) {
+                                uVar7 = pMVar11->runningStatus;
+                            }else{
+                                pbVar6 = pbVar6 + 1;
+                                pMVar11->cmdPtr = pbVar6;
+                                if (0xbc < uVar7) pMVar11->runningStatus = bVar5;
+                            }
+                            if (uVar7 < 0xcf) break;
+                            ply_note(uVar7 - 0xcf,mplayInfo,pMVar11);
+                        }
+                        if (0xb0 < uVar7) break;
+                        pMVar11->wait = gClockTable[uVar7];
+                    }
+                    mplayInfo->cmd = (u8)(uVar7 - 0xb1);
+                    void (*MPlayJumpTable)(struct MusicPlayerInfo*, struct MusicPlayerTrack*, u8*);
+                    MPlayJumpTable = mixer->MPlayJumpTable[(uVar7 - 0xb1)];
+                    MPlayJumpTable(mplayInfo,pMVar11,pbVar6);
+                } while (pMVar11->flags != '\0');
+            }
+_081DD998:
+            if (uVar2 - 1 == 0 || (s32)uVar2 < 1) goto _081DD9A4;
+            pMVar11 = pMVar11 + 1;
+            uVar8 = uVar8 << 1;
+            uVar2 = uVar2 - 1;
+        } while( TRUE );
+    }
+    pMVar11 = mplayInfo->tracks;
+    uVar2 = (u32)mplayInfo->trackCount;
+    do {
+        if (((pMVar11->flags & 0x80) != 0) && ((pMVar11->flags & 0xf) != 0)) {
+            TrkVolPitSet(mplayInfo,pMVar11);
+            pSVar10 = pMVar11->chan;
+            while (pSVar10 != NULL) {
+                if ((pSVar10->statusFlags & 199) == 0) {
+                    ClearChain(pSVar10);
+                }else{
+                    bVar5 = pSVar10->type;
+                    if (((pMVar11->flags & 3) != 0) && (ChnVolSetAsm(mplayInfo, pMVar11), (bVar5 & 7) != 0)) *(u8 *)((s32)&pSVar10->fw + 1) = *(u8 *)((s32)&pSVar10->fw + 1) | 1;
+                    if ((pMVar11->flags & 0xc) != 0) {
+                        iVar3 = (u32)pSVar10->key + (s32)(char)pMVar11->keyM;
+                        if (iVar3 < 0) iVar3 = 0;
+                        if ((bVar5 & 7) == 0) {
+                            uVar4 = MidiKeyToFreq(pSVar10->wav,(u8)iVar3,pMVar11->pitM);
+                            pSVar10->frequency = uVar4;
+                        }else{
+                            uVar4 = MidiKeyToCgbFreq(bVar5 & 7,iVar3,pMVar11->pitM);
+                            pSVar10->frequency = uVar4;
+                            *(u8 *)((s32)&pSVar10->fw + 1) = *(u8 *)((s32)&pSVar10->fw + 1) | 2;
+                        }
+                    }
+                }
+                pSVar10 = pSVar10->nextChannelPointer;
+            }
+            pMVar11->flags = pMVar11->flags & 0xf0;
+        }
+    } while ((uVar2 - 1 != 0 && 0 < (s32)uVar2) &&
+    (bVar12 = SCARRY4((s32)pMVar11,0x50), pMVar11 = pMVar11 + 1, uVar2 = uVar2 - 1,
+    pMVar11 != NULL && (s32)pMVar11 < 0 == bVar12));
+    mplayInfo->ident = ID_NUMBER;
+    return;
+_081DD9A4:
+    mplayInfo->clock = mplayInfo->clock + 1;
+    if (uVar9 == 0) {
+        mplayInfo->status = 0x80000000;
+        mplayInfo->ident = ID_NUMBER;
+        return;
+    }
+    mplayInfo->status = uVar9;
+    uVar2 = mplayInfo->tempoC - 0x96;
+    goto _081DD9BC;
+}
