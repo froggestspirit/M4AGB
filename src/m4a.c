@@ -1998,7 +1998,6 @@ void MPlayMain(struct MusicPlayerInfo *mplayInfo)
                             goto _081DD998;
                         }else{
                             u8 cmd = *tempTrack->cmdPtr;
-                            mgba_printf(1, "Track:%x cmdPtr:%x cmd:%x\n", tempTrack, tempTrack->cmdPtr, *tempTrack->cmdPtr);
                             if(cmd >= 0x80){ //check if this is a repeated command or a new one
                                 tempTrack->cmdPtr++;
                                 if(cmd > 0xbc) tempTrack->runningStatus = cmd;
@@ -2064,9 +2063,4 @@ _081DD9A4:
         mplayInfo->status = uVar9;
         mplayInfo->tempoC -= 0x96;
     }
-}
-
-
-void print_test(struct MusicPlayerTrack *tempTrack){
-    mgba_printf(1, "Track:%x cmdPtr:%x cmd:%x\n", tempTrack, tempTrack->cmdPtr, *tempTrack->cmdPtr);
 }
