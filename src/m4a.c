@@ -2007,7 +2007,7 @@ void MPlayMain(struct MusicPlayerInfo *mplayInfo)
                             if(cmd >= 0xcf){
                                 ply_note(cmd - 0xcf,mplayInfo,tempTrack);
                             }else if(cmd <= 0xb0){
-                                tempTrack->wait = gClockTable[cmd];
+                                tempTrack->wait = gClockTable[cmd - 0x80];
                             }else{
                                 mplayInfo->cmd = (u8)(cmd - 0xb1);
                                 void (*MPlayJumpTable)(struct MusicPlayerInfo*, struct MusicPlayerTrack*, u8*);
