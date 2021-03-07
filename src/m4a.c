@@ -1917,7 +1917,7 @@ void ply_note(u32 time, struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTra
         }else{
             tempGBChan->sweep = inst->pan_sweep;
         }
-        tempChan->frequency = MidiKeyToCgbFreq(instType & 7,key,track->pitM);
+        tempChan->frequency = MidiKeyToCgbFreq(instType & TONEDATA_TYPE_CGB,key,track->pitM);
     }
     tempChan->statusFlags = SOUND_CHANNEL_SF_START;
     track->flags &= 0xf0;
@@ -1931,48 +1931,42 @@ bool8 SCARRY4(s32 a, s32 b){
 
 void MPlayMain(struct MusicPlayerInfo *mplayInfo)
 {
-    s32 iVar3;
-    u32 uVar4;
-    u8 bVar5;
-    u32 uVar7;
-    u32 uVar8;
-    u32 uVar9;
-    struct SoundChannel *tempChan;
-    struct MusicPlayerTrack *tempTrack;
-    bool8 bVar12;
-
     void (*MPlayMainNext)(struct MusicPlayerInfo*);
     MPlayMainNext = mplayInfo->MPlayMainNext;
-    if (mplayInfo->ident != ID_NUMBER) return;
+    if(mplayInfo->ident != ID_NUMBER) return;
     mplayInfo->ident = 0x68736d54;
-    if (mplayInfo->MPlayMainNext != NULL) MPlayMainNext(mplayInfo->musicPlayerNext);
+    if(mplayInfo->MPlayMainNext != NULL) MPlayMainNext(mplayInfo->musicPlayerNext);
     struct SoundInfo *mixer = SOUND_INFO_PTR;
-    if ((mplayInfo->status & MUSICPLAYER_STATUS_PAUSE) || (FadeOutBody(mplayInfo), mplayInfo->status & MUSICPLAYER_STATUS_PAUSE)) {
+    if((mplayInfo->status & MUSICPLAYER_STATUS_PAUSE) || (FadeOutBody(mplayInfo), mplayInfo->status & MUSICPLAYER_STATUS_PAUSE)){
         mplayInfo->ident = ID_NUMBER;
         return;
     }
-    u32 uVar2 = mplayInfo->tempoC + mplayInfo->tempoI;
+    s32 uVar2;
+    u16 uVar9;
+    struct SoundChannel *tempChan;
+    struct MusicPlayerTrack *tempTrack;
+    mplayInfo->tempoC += mplayInfo->tempoI;
     while(TRUE){
-        mplayInfo->tempoC = uVar2;
-        if (0x95 < uVar2) {
+        if(mplayInfo->tempoC > 0x95){
             tempTrack = mplayInfo->tracks;
-            uVar8 = 1;
+            u16 uVar8 = 1;
             uVar9 = 0;
             uVar2 = mplayInfo->trackCount;
-            do {
-                if ((tempTrack->flags & MPT_FLG_EXIST) != 0) {
-                    uVar9 = uVar9 | uVar8;
+            while(TRUE){
+                if(tempTrack->flags & MPT_FLG_EXIST){
+                    uVar9 |= uVar8;
                     tempChan = tempTrack->chan;
-                    while (tempChan != NULL) {
-                        if ((tempChan->statusFlags & SOUND_CHANNEL_SF_ON) == 0) {
-                            ClearChain(tempChan);
+                    while(tempChan != NULL){
+                        if(tempChan->statusFlags & SOUND_CHANNEL_SF_ON){
+                            if(tempChan->gateTime){
+                                if(--tempChan->gateTime == 0) tempChan->statusFlags |= SOUND_CHANNEL_SF_STOP;
+                            }
                         }else{
-                            if ((tempChan->gateTime != 0) &&
-                            (iVar3 = tempChan->gateTime - 1, tempChan->gateTime = (u8)iVar3, iVar3 == 0)) tempChan->statusFlags = tempChan->statusFlags | 0x40;
+                            ClearChain(tempChan);
                         }
                         tempChan = tempChan->nextChannelPointer;
                     }
-                    if ((tempTrack->flags & MPT_FLG_START) != 0) {
+                    if(tempTrack->flags & MPT_FLG_START){
                         Clear64byte(tempTrack);
                         tempTrack->flags = MPT_FLG_EXIST;
                         tempTrack->bendRange = 2;
@@ -1980,87 +1974,78 @@ void MPlayMain(struct MusicPlayerInfo *mplayInfo)
                         tempTrack->lfoSpeed = 0x16;
                         (tempTrack->tone).type = 1;
                     }
-                    do {
-                        while( TRUE ) {
-                            while( TRUE ) {
-                                if (tempTrack->wait != '\0') {
-                                    tempTrack->wait = tempTrack->wait + -1;
-                                    if ((tempTrack->lfoSpeed != 0) && (tempTrack->mod != '\0')) {
-                                        if (tempTrack->lfoDelayC == '\0') {
-                                            iVar3 = tempTrack->lfoSpeedC + tempTrack->lfoSpeed;
-                                            tempTrack->lfoSpeedC = iVar3;
-                                            if ((iVar3 + -0x40) * 0x1000000 < 0) {
-                                                iVar3 = (s32)(char)(u8)iVar3;
-                                            }else{
-                                                iVar3 = 0x80 - iVar3;
-                                            }
-                                            uVar7 = (s32)(iVar3 * (u32)tempTrack->mod) >> 6;
-                                            if ((((u8)tempTrack->modM ^ uVar7) & 0xff) != 0) {
-                                                tempTrack->modM = (s8)uVar7;
-                                                if (tempTrack->modT == '\0') {
-                                                    bVar5 = 0xc;
-                                                }else{
-                                                    bVar5 = 3;
-                                                }
-                                                tempTrack->flags = tempTrack->flags | bVar5;
-                                            }
+                    while(tempTrack->flags){
+                        if(tempTrack->wait){
+                            tempTrack->wait--;
+                            if((tempTrack->lfoSpeed) && (tempTrack->mod)){
+                                if(tempTrack->lfoDelayC){
+                                    tempTrack->lfoDelayC--;
+                                }else{
+                                    s32 iVar3 = tempTrack->lfoSpeedC + tempTrack->lfoSpeed;
+                                    tempTrack->lfoSpeedC = iVar3;
+                                    if(iVar3 >= 0x40) iVar3 = 0x80 - iVar3;
+                                    u32 uVar7 = (s32)(iVar3 * (u32)tempTrack->mod) >> 6;
+                                    if((((u8)tempTrack->modM ^ uVar7) & 0xff)){
+                                        tempTrack->modM = (s8)uVar7;
+                                        if(tempTrack->modT){
+                                            tempTrack->flags = tempTrack->flags | 3;
                                         }else{
-                                            tempTrack->lfoDelayC = tempTrack->lfoDelayC + -1;
+                                            tempTrack->flags = tempTrack->flags | 0xc;
                                         }
                                     }
-                                    goto _081DD998;
                                 }
-                                bVar5 = *tempTrack->cmdPtr;
-                                uVar7 = *tempTrack->cmdPtr;
-                                if (uVar7 < 0x80) {
-                                    uVar7 = tempTrack->runningStatus;
-                                }else{
-                                    tempTrack->cmdPtr++;
-                                    if (0xbc < uVar7) tempTrack->runningStatus = bVar5;
-                                }
-                                if (uVar7 < 0xcf) break;
-                                ply_note(uVar7 - 0xcf,mplayInfo,tempTrack);
                             }
-                            if (uVar7 > 0xb0) break;
-                            tempTrack->wait = gClockTable[uVar7];
+                            goto _081DD998;
+                        }else{
+                            u8 cmd = *tempTrack->cmdPtr;
+                            mgba_printf(1, "Track:%x cmdPtr:%x cmd:%x\n", tempTrack, tempTrack->cmdPtr, *tempTrack->cmdPtr);
+                            if(cmd >= 0x80){ //check if this is a repeated command or a new one
+                                tempTrack->cmdPtr++;
+                                if(cmd > 0xbc) tempTrack->runningStatus = cmd;
+                            }else{
+                                cmd = tempTrack->runningStatus;
+                            }
+                            if(cmd >= 0xcf){
+                                ply_note(cmd - 0xcf,mplayInfo,tempTrack);
+                            }else if(cmd <= 0xb0){
+                                tempTrack->wait = gClockTable[cmd];
+                            }else{
+                                mplayInfo->cmd = (u8)(cmd - 0xb1);
+                                void (*MPlayJumpTable)(struct MusicPlayerInfo*, struct MusicPlayerTrack*, u8*);
+                                MPlayJumpTable = mixer->MPlayJumpTable[mplayInfo->cmd];
+                                MPlayJumpTable(mplayInfo,tempTrack,tempTrack->cmdPtr);
+                            }
                         }
-                        mplayInfo->cmd = (u8)(uVar7 - 0xb1);
-                        void (*MPlayJumpTable)(struct MusicPlayerInfo*, struct MusicPlayerTrack*, u8*);
-                        MPlayJumpTable = mixer->MPlayJumpTable[mplayInfo->cmd];
-                        MPlayJumpTable(mplayInfo,tempTrack,tempTrack->cmdPtr);
-                    } while (tempTrack->flags);
+                    }
                 }
 _081DD998:
-                if (uVar2 - 1 == 0 || (s32)uVar2 < 1) goto _081DD9A4;
+                if(uVar2 <= 1) goto _081DD9A4;
                 tempTrack++;
                 uVar8 <<= 1;
                 uVar2--;
-            } while( TRUE );
+            }
         }
         tempTrack = mplayInfo->tracks;
         uVar2 = mplayInfo->trackCount;
-        do {
-            if (((tempTrack->flags & MPT_FLG_EXIST) != 0) && ((tempTrack->flags & 0xf) != 0)) {
+        do{
+            if(((tempTrack->flags & MPT_FLG_EXIST) != 0) && ((tempTrack->flags & 0xf) != 0)){
                 TrkVolPitSet(mplayInfo,tempTrack);
                 tempChan = tempTrack->chan;
-                while (tempChan != NULL) {
-                    if ((tempChan->statusFlags & SOUND_CHANNEL_SF_ON) == 0) {
-                        ClearChain(tempChan);
-                    }else{
-                        bVar5 = tempChan->type;
-                        if (((tempTrack->flags & MPT_FLG_VOLCHG) != 0) && (ChnVolSetAsm(mplayInfo, tempTrack), (bVar5 & 7) != 0)) *(u8 *)((s32)&tempChan->fw + 1) = *(u8 *)((s32)&tempChan->fw + 1) | 1;
-                        if ((tempTrack->flags & MPT_FLG_PITCHG) != 0) {
-                            iVar3 = (u32)tempChan->key + (s32)(char)tempTrack->keyM;
-                            if (iVar3 < 0) iVar3 = 0;
-                            if ((bVar5 & 7) == 0) {
-                                uVar4 = MidiKeyToFreq(tempChan->wav,(u8)iVar3,tempTrack->pitM);
-                                tempChan->frequency = uVar4;
-                            }else{
-                                uVar4 = MidiKeyToCgbFreq(bVar5 & 7,iVar3,tempTrack->pitM);
-                                tempChan->frequency = uVar4;
+                while (tempChan != NULL){
+                    if(tempChan->statusFlags & SOUND_CHANNEL_SF_ON){
+                        if((tempTrack->flags & MPT_FLG_VOLCHG) && (ChnVolSetAsm(mplayInfo, tempTrack), (tempChan->type & 7) != 0)) *(u8 *)((s32)&tempChan->fw + 1) = *(u8 *)((s32)&tempChan->fw + 1) | 1;
+                        if(tempTrack->flags & MPT_FLG_PITCHG){
+                            int key = (u32)tempChan->key + (s32)(char)tempTrack->keyM;
+                            if(key < 0) key = 0;
+                            if(tempChan->type & TONEDATA_TYPE_CGB){
+                                tempChan->frequency = MidiKeyToCgbFreq(tempChan->type & TONEDATA_TYPE_CGB,key,tempTrack->pitM);
                                 *(u8 *)((s32)&tempChan->fw + 1) = *(u8 *)((s32)&tempChan->fw + 1) | 2;
+                            }else{
+                                tempChan->frequency = MidiKeyToFreq(tempChan->wav,(u8)key,tempTrack->pitM);
                             }
                         }
+                    }else{
+                        ClearChain(tempChan);
                     }
                     tempChan = tempChan->nextChannelPointer;
                 }
@@ -2071,12 +2056,17 @@ _081DD998:
         return;
 _081DD9A4:
         mplayInfo->clock++;
-        if (uVar9 == 0) {
+        if(uVar9 == 0){
             mplayInfo->status = 0x80000000;
             mplayInfo->ident = ID_NUMBER;
             return;
         }
         mplayInfo->status = uVar9;
-        uVar2 = mplayInfo->tempoC - 0x96;
+        mplayInfo->tempoC -= 0x96;
     }
+}
+
+
+void print_test(struct MusicPlayerTrack *tempTrack){
+    mgba_printf(1, "Track:%x cmdPtr:%x cmd:%x\n", tempTrack, tempTrack->cmdPtr, *tempTrack->cmdPtr);
 }

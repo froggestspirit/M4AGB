@@ -337,7 +337,7 @@ struct MusicPlayerInfo
     u32 clock;
     u8 gap[8];
     u8 *memAccArea;
-    u16 tempoD;
+    u16 tempoD; //0x18
     u16 tempoU;
     u16 tempoI;
     u16 tempoC;
