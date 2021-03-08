@@ -1981,12 +1981,15 @@ void MPlayMain(struct MusicPlayerInfo *mplayInfo)
                                 if(tempTrack->lfoDelayC){
                                     tempTrack->lfoDelayC--;
                                 }else{
-                                    s32 iVar3 = tempTrack->lfoSpeedC + tempTrack->lfoSpeed;
-                                    tempTrack->lfoSpeedC = iVar3;
-                                    if(iVar3 >= 0x40) iVar3 = 0x80 - iVar3;
-                                    u32 uVar7 = (s32)(iVar3 * (u32)tempTrack->mod) >> 6;
-                                    if((((u8)tempTrack->modM ^ uVar7) & 0xff)){
-                                        tempTrack->modM = (s8)uVar7;
+                                    tempTrack->lfoSpeedC += tempTrack->lfoSpeed;
+                                    s8 uVar7;
+                                    if((tempTrack->lfoSpeedC + 0x40) & 0x80){
+                                        uVar7 = ((s8)(0x80 - tempTrack->lfoSpeedC) * tempTrack->mod) >> 6;
+                                    }else{
+                                        uVar7 = ((s8)tempTrack->lfoSpeedC * tempTrack->mod) >> 6;
+                                    }
+                                    if(((tempTrack->modM ^ uVar7) & 0xff)){
+                                        tempTrack->modM = uVar7;
                                         if(tempTrack->modT){
                                             tempTrack->flags = tempTrack->flags | 3;
                                         }else{
